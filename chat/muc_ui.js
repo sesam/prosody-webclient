@@ -6,6 +6,7 @@ function create_muc_ui(conn, jid, nick, options)
 	var muc;
 	var handlers = {};
 	
+	window.hide_slash_warning = false;
 	var roster = null;
 	
 	if(options.occupant_list)
@@ -134,8 +135,16 @@ function create_muc_ui(conn, jid, nick, options)
 
 			if(code == 13 && input_box.value.length > 0)
 			{
-				muc.send_message(input_box.value);
-				input_box.value = '';
+				if(input_box.value.charAt(0)=="/" && !window.hide_slash_warning)
+				{
+					alert("Notice: /commands are not suppored. If this means nothing to you, just press enter again and your message will be sent, including the beginning / and sorry to bother you!");
+					window.hide_slash_warning = true;
+				}
+				else
+				{
+					muc.send_message(input_box.value);
+					input_box.value = '';
+				}
 				return false;
 			}
 			else if(code == 9 && options.tab_completion)
