@@ -3,10 +3,9 @@ function create_muc_ui(conn, jid, nick, options)
 	if(!conn)
 		return false;
 	
-	var muc;
+	var muc = {}; //make muc an object from the start. Needed by muc.window_focused focus tracking.
 	var handlers = {};
 	
-	window.hide_slash_warning = false;
 	var roster = null;
 	
 	if(options.occupant_list)
@@ -88,7 +87,7 @@ function create_muc_ui(conn, jid, nick, options)
 				html = linkify(html);
 			options.message_log.innerHTML += html;
 			options.message_log.scrollTop = options.message_log.scrollHeight;
-			if(options.detect_focus)
+			if(options.detect_focus && !muc.window_focused)
 			{
 				muc.unread_messages++;
 				document.title = " ("+muc.unread_messages+") " + original_title;
@@ -135,10 +134,10 @@ function create_muc_ui(conn, jid, nick, options)
 
 			if(code == 13 && input_box.value.length > 0)
 			{
-				if(input_box.value.charAt(0)=="/" && !window.hide_slash_warning)
+				if(input_box.value.charAt(0)=="/" && !muc.hide_slash_warning)
 				{
 					alert("Notice: /commands are not suppored. If this means nothing to you, just press enter again and your message will be sent, including the beginning / and sorry to bother you!");
-					window.hide_slash_warning = true;
+					muc.hide_slash_warning = true;
 				}
 				else
 				{
@@ -216,7 +215,7 @@ function create_muc_ui(conn, jid, nick, options)
 	{
 		var original_title = document.title;
 	
-		var window_focused = true;
+		muc.window_focused = true;
 		var active_element = document.activeElement;
 		
 		var away_timeout = null;
@@ -229,9 +228,9 @@ function create_muc_ui(conn, jid, nick, options)
 				active_element = document.activeElement;
 				return;
 			}
-			else if(window_focused)
+			else if(muc.window_focused)
 			{
-				window_focused = false;
+				muc.window_focused = false;
 				away_timeout = window.setTimeout(function () {
 					away_flag = true;
 					muc.set_status("away", "Window not active");
@@ -241,7 +240,7 @@ function create_muc_ui(conn, jid, nick, options)
 
 		function handle_focus()
 		{
-			if(!window_focused)
+			if(!muc.window_focused)
 			{
 				muc.unread_messages = 0;
 				document.title = original_title;
@@ -255,7 +254,7 @@ function create_muc_ui(conn, jid, nick, options)
 					window.clearTimeout(away_timeout);
 					away_timeout = null;
 				}
-				window_focused = true;
+				muc.window_focused = true;
 			}
 		}
 		
@@ -273,6 +272,8 @@ function create_muc_ui(conn, jid, nick, options)
 	
 	muc = create_muc_handler(conn, jid, nick, handlers);
 	muc.unread_messages = 0;
+	muc.window_focused = true;
+	muc.hide_slash_warning = false;
 }
 
 function htmlescape(s)
