@@ -2,8 +2,11 @@
 <head>
 	<title>Prosody IM Webchat</title>
 	<link rel="stylesheet" href="webchat.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="_local.css" type="text/css" media="screen" />
 	<link rel="icon" href="/favicon.png" type="image/png" />
 	
+	<script type="text/javascript" src="_local.js"></script>
+
 	<script type="text/javascript" src="strophe/b64.js"></script>
 	<script type="text/javascript" src="strophe/md5.js"></script>
 	<script type="text/javascript" src="strophe/sha1.js"></script>
@@ -20,13 +23,16 @@
 		body, html { overflow: hidden; margin: 0; padding: 0; width: 100%, height: 100% }
 	</style>
 	<script type="text/javascript">
-		var conn = new Strophe.Connection("/bosh");
-		var room = "prosody@conference.prosody.im";
-		var nick = window.location.search.match(/[?&]nick=([^&]*)/);
+		var conn = new Strophe.Connection(window.bosh ? window.bosh : "/bosh");
+		var room = window.room ? window.room : "test@conference.prosody.im";
+		var nick = window.location.toString().match(/[?&#]nick=([^&#]*)/); //Allow taking #nick=(nickname) as well as the traditional URL-parameter method
 		
 		if(nick && nick[1] && nick[1].length > 0)
 			nick = nick[1];
-		
+
+		if (nick && console && console.info)
+			console.info('Nickname set to "' + nick + '"');
+
 		function version_handler(stanza)
 		{
 			conn.send($iq({to: stanza.getAttribute("from"), type: "result", id: stanza.getAttribute("id") })
@@ -73,23 +79,6 @@
 			, rect: '0 0 1000 449'
 			, anchors: 'top bottom left right'
 			, childViews: [
-				{ view: 'HFlow'
-				, rect: '0 0 1000 34'
-				, anchors: 'top left right'
-				, childViews: [
-					{ view: 'Image'
-					, rect: '0 0 223 34'
-					, anchors: 'top left'
-					, src: '/images/prosody_chatroom.png'
-					}
-					,
-					{ view: 'Box'
-					, rect: '224 0 777 34'
-					, anchors: 'top left right'
-					, background: '#fec676'
-					}]
-				}
-				,
 				{ view: 'HSplitPane', rect: '0 34 1000 415'
 				, anchors: 'left top right bottom'
 				, autogrowLeft: true, autogrowRight: false
@@ -125,7 +114,9 @@
      					, id: 'roster'
      					}]
      				}]
-			}).attachTo(window, '1000 449'); //.attachTo(document.getElementById('client'), '1000 449' );
+			}
+		//).attachTo(window, '1000 449');
+		).attachTo(document.getElementById('client'), '1000 449' );
 		}
 
 		function start_connection()
@@ -140,6 +131,7 @@
 		function nickname_entered()
 		{
 			nick = document.getElementById('nickentry').value;
+			window.location.hash = '#nick=' + nick; //Save chosen nick in URL #, such that a bookmark of the chat page leads *straight back* into the chatroom(!)
 			start_connection();
 		}
 
@@ -179,21 +171,13 @@
 	</script>
 </head>
 <body>
-<!--	<div id="header-small">
-			<img src="/horse.png" />
+	<div id="header">
+			<img id="logo" src="/images/prosody_chatroom.png" />
 	</div>
-	<br style="clear:both; width:100%;"/>
--->	
 	<div id="nickchoose">
-		<div id="nickentryline">
-			<p>Enter a name or just click <b>Enter</b> to join the chatroom</p>
-			<p>Nickname: <input id="nickentry" type="text" value="" />&nbsp;<input style="font-weight:bold;" type="submit" value="Enter" onclick='nickname_entered()' /></p>
-		</div>
+		<p id="what-name">What name will you use in the chat?</p>
+		<p><span id="name-colon">Name:</span> <input id="nickentry" type="text" />&nbsp;<input type="submit" id="join" value="Join chat" onclick='nickname_entered()' /></p>
 	</div>
-
-	<!-- <div id="client" style="width:100%; height:100%;"></div> 
-	<script type="text/javascript">
-	</script> -->
-	
+	<div id="client" style="height:100%;"></div>
 </body>
 </html>
