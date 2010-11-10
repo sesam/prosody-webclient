@@ -131,10 +131,11 @@ function create_muc_ui(conn, jid, nick, options)
 		input_box.onkeydown = function (e)
 		{
 			var code = window.event?window.event.keyCode:e.which;
+			var msg = input_box.value;
 
-			if(code == 13 && input_box.value.length > 0)
+			if(code == 13 && msg.length > 0)
 			{
-				if(input_box.value.charAt(0)=="/" && !muc.hide_slash_warning)
+				if(msg.charAt(0)=="/" && !muc.hide_slash_warning && !msg.match(action_pattern))
 				{
 					alert("Notice: /commands are not suppored. If this means nothing to you, just press enter again and your message will be sent, including the beginning / and sorry to bother you!");
 					muc.hide_slash_warning = true;

@@ -38,7 +38,7 @@
 			conn.send($iq({to: stanza.getAttribute("from"), type: "result", id: stanza.getAttribute("id") })
 				.c('query', { xmlns: "jabber:iq:version" })
 					.c('name').t(BrowserDetect.browser).up()
-					.c('version').t(BrowserDetect.version.toString()).up()
+					.c('version').t(BrowserDetect.version.toString() + ', Strophe lib fingerprint '+hex_md5(Strophe).substring(0,6) ).up()
 					.c('os').t(BrowserDetect.OS).tree());
 			return true;
 		}
