@@ -1,0 +1,199 @@
+<html>
+<head>
+	<title>Prosody IM Webchat</title>
+	<link rel="stylesheet" href="webchat.css" type="text/css" media="screen" />
+	<link rel="icon" href="/favicon.png" type="image/png" />
+	
+	<script type="text/javascript" src="strophe/b64.js"></script>
+	<script type="text/javascript" src="strophe/md5.js"></script>
+	<script type="text/javascript" src="strophe/sha1.js"></script>
+	<script type="text/javascript" src="strophe/strophe.js"></script>
+
+	<script type="text/javascript" src="browser_version.js"></script>
+	<script type="text/javascript" src="ba-linkify.js"></script>
+	<script type="text/javascript" src="muc_handler.js"></script>
+	<script type="text/javascript" src="muc_ui.js"></script>
+
+	<script type="text/javascript" src="uki.js"></script>
+	
+	<style type="text/css">
+		body, html { overflow: hidden; margin: 0; padding: 0; width: 100%, height: 100% }
+	</style>
+	<script type="text/javascript">
+		var conn = new Strophe.Connection("/bosh");
+		var room = "prosody@conference.prosody.im";
+		var nick = window.location.search.match(/[?&]nick=([^&]*)/);
+		
+		if(nick && nick[1] && nick[1].length > 0)
+			nick = nick[1];
+		
+		function version_handler(stanza)
+		{
+			conn.send($iq({to: stanza.getAttribute("from"), type: "result", id: stanza.getAttribute("id") })
+				.c('query', { xmlns: "jabber:iq:version" })
+					.c('name').t(BrowserDetect.browser).up()
+					.c('version').t(BrowserDetect.version.toString()).up()
+					.c('os').t(BrowserDetect.OS).tree());
+			return true;
+		}
+		
+		function handle_connection_status(status, err)
+		{
+			if(err)
+				alert(err);
+
+			if(status == Strophe.Status.CONNECTED)
+			{
+				conn.addHandler(version_handler, null, "iq", "get", null, null);
+				create_muc_ui(conn, room, nick,
+					{ message_log: document.getElementById('msglog')
+					, input_box: document.getElementById('msginput').getElementsByTagName("input")[0]
+					, occupant_list: document.getElementById('roster')
+					, detect_focus: true, tab_completion: true
+					}
+				);
+				window.onunload = window.onbeforeunload = function () {
+					if(!conn) return;
+					conn.send($pres({to: room, type:"unavailable"}).c("status").t("Window closed"));
+					conn.disconnect();
+					conn = null;
+				};
+				
+				// Focus on entry box
+				document.getElementById('msginput').focus();
+				document.getElementById('msginput').select();
+			}
+			
+		}
+
+		function show_client()
+		{
+			uki(
+			{ view: 'VFlow'
+			, rect: '0 0 1000 449'
+			, anchors: 'top bottom left right'
+			, childViews: [
+				{ view: 'HFlow'
+				, rect: '0 0 1000 34'
+				, anchors: 'top left right'
+				, childViews: [
+					{ view: 'Image'
+					, rect: '0 0 223 34'
+					, anchors: 'top left'
+					, src: '/images/prosody_chatroom.png'
+					}
+					,
+					{ view: 'Box'
+					, rect: '224 0 777 34'
+					, anchors: 'top left right'
+					, background: '#fec676'
+					}]
+				}
+				,
+				{ view: 'HSplitPane', rect: '0 34 1000 415'
+				, anchors: 'left top right bottom'
+				, autogrowLeft: true, autogrowRight: false
+				, handlePosition: 850
+				, leftChildViews: [
+					{ view: 'VFlow'
+					, rect: '0 0 850 415'
+					, anchors: 'top left bottom right'
+					, childViews: [
+    						{ view: 'ScrollPane'
+    						, rect: '10 10 835 375'
+    						, anchors: 'top left right bottom'
+    						, id: 'msglog'
+    						}
+    						,
+    						{ view: 'Box'
+    						, rect: '0 0 835 7'
+    						, anchors: 'top left right'
+    						}
+    						,	
+    						{ view: 'TextField'
+    						, rect: '10 10 835 24'
+    						, anchors: 'bottom left right'
+    						, placeholder: 'type your message here and press enter'
+    						, id: 'msginput'
+    						}]
+    					}]
+				, rightChildViews: [
+     					{ view: 'ScrollPane'
+     					, rect: '5 10 140 395'
+     					, anchors: 'top left right bottom'
+     					, scrollableV: true
+     					, id: 'roster'
+     					}]
+     				}]
+			}).attachTo(window, '1000 449'); //.attachTo(document.getElementById('client'), '1000 449' );
+		}
+
+		function start_connection()
+		{
+			if(nick.length == 0) nick = "itriedtologinwithnonick";
+			if(nick.length > 24) nick = nick.substr(0, 20);
+			document.getElementById('nickchoose').style.display = 'none';
+			show_client();
+			conn.connect("anon.prosody.im", null, handle_connection_status, 50);
+		}
+		
+		function nickname_entered()
+		{
+			nick = document.getElementById('nickentry').value;
+			start_connection();
+		}
+
+		window.onload = function ()
+		{
+			var showprompt = false;			
+			var nickentry = document.getElementById('nickentry');
+			
+			if(nick == null)
+			{
+				showprompt = true;
+				if(nickentry.value == '')
+				{
+					nick = "guest"+conn.getUniqueId();
+					nickentry.value = nick;
+				}
+				else
+				{
+					nick = nickentry.value;
+				}
+			}
+			else
+				nickentry.value = nick;
+			
+			if(showprompt)
+			{
+				nickentry.focus();
+				nickentry.onkeypress = function (e)
+				{
+					if( (window.event?window.event.keyCode:e.which) == 13 )
+						nickname_entered();
+				}
+			}
+			else
+				start_connection();
+		};
+	</script>
+</head>
+<body>
+<!--	<div id="header-small">
+			<img src="/horse.png" />
+	</div>
+	<br style="clear:both; width:100%;"/>
+-->	
+	<div id="nickchoose">
+		<div id="nickentryline">
+			<p>Enter a name or just click <b>Enter</b> to join the chatroom</p>
+			<p>Nickname: <input id="nickentry" type="text" value="" />&nbsp;<input style="font-weight:bold;" type="submit" value="Enter" onclick='nickname_entered()' /></p>
+		</div>
+	</div>
+
+	<!-- <div id="client" style="width:100%; height:100%;"></div> 
+	<script type="text/javascript">
+	</script> -->
+	
+</body>
+</html>

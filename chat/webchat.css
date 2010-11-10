@@ -1,0 +1,76 @@
+
+/* MUC styling */
+
+body
+	{
+		height:100%; width:100%;
+		font-size:10pt;
+		font-family:Helvetica Verdana;
+	}
+
+h1
+	{
+		display:none;
+		font-size:12pt;
+		font-weight:bold;
+	}
+
+#roster, #msglog, #msginput, #nickchoose, #nickentryline, input
+	{
+		background-color:#ffffff;
+	}
+
+#roster, #msglog
+	{
+		overflow:auto !important;
+	}
+
+#nickchoose
+	{
+		height:80%;
+	}
+#nickentryline
+	{
+		padding:10px;
+		margin-top:10%;
+		margin-left:auto; margin-right:auto;
+		width:40%;
+	}
+	
+#throbber
+	{
+		float:left;
+		margin-top:10%;
+		margin-left:40%;
+	}
+
+.statusindicator
+	{
+		font-size:16px;
+		color:#cccccc;
+	}
+
+.rosteritem.statusonline .statusindicator { color:#55ff55; }
+.rosteritem.statusaway   .statusindicator { color:#ff9900; }
+.rosteritem.statusxa     .statusindicator { color:#ff5555; }
+.rosteritem.statusdnd    .statusindicator { color:#ff1111; }
+.rosteritem.statuschat   .statusindicator { color:#ffff00; }
+
+.muc-nick
+	{
+		font-weight:bold;
+	}
+
+.muc-join
+	{
+		color:#30c030;
+	}
+.muc-leave
+	{
+		color:#c03030;
+	}
+
+.muc-history
+	{
+		color:#bbbbbb;
+	}
