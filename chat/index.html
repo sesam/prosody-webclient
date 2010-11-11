@@ -24,6 +24,7 @@
 	</style>
 	<script type="text/javascript">
 		var conn = new Strophe.Connection(window.bosh ? window.bosh : "/bosh");
+		addEventListener("beforeunload", function() { window.conn.disconnect() } );
 		var room = window.room ? window.room : "test@conference.prosody.im";
 		var nick = window.location.toString().match(/[?&#]nick=([^&#]*)/); //Allow taking #nick=(nickname) as well as the traditional URL-parameter method
 		
