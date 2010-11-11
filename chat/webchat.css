@@ -76,3 +76,11 @@ h1
 	{
 		color:#bbbbbb;
 	}
+
+span.muc-timestamp
+	{
+		color:#bbbbbb;
+		padding:0 0.5em;
+		font-size:80%;
+		float:right;
+	}

@@ -20,6 +20,34 @@ function create_muc_ui(conn, jid, nick, options)
 	
 	var roster = null;
 	
+	action_pattern = new RegExp("^\/me[ ']");
+		
+	window.get_timestamp = function() { var d=new Date(); return d.getHours()+':'+d.getMinutes(); }
+
+	var get_message = function (nick, message, timestamp, klass)
+		{
+			if(message.match(action_pattern))
+			{
+				klass += ' muc-action';
+				message = message.substring(4);
+			}
+
+			var html = "<div class='"+klass+"'><span class='muc-timestamp'>" + timestamp + "</span><span class='muc-nick'>" + htmlescape(nick) + "</span>" + ": " + htmlescape(message) + "</div>\n";
+
+			if(window.linkify)
+				html = linkify(html);
+			return html;
+		}
+
+		print_message = function (nick, message, timestamp, klass)
+		{
+			//var current_scroll = options.message_log.scrollTop;
+			options.message_log.innerHTML += get_message(nick, message, timestamp, klass);
+			//if(options.message_log.scrollHeight-current_scroll<=100) //only scroll down automatically when the screen is currently near the bottom, i.e. not reading backlog. (Feature or bug, you decide, this 100px criteria also makes auto-scrolling stop if some 5+ line chat message is received, and you'll have to scroll past it yourself to get the automatic scrolling going again.)
+				options.message_log.scrollTop = options.message_log.scrollHeight;
+		}
+
+
 	if(options.occupant_list)
 		roster = options.occupant_list;
 	
@@ -52,11 +80,7 @@ function create_muc_ui(conn, jid, nick, options)
 				muc.occupants[nick].rosteritem = rosteritem;
 			}
 			
-			var html = "<span class='muc-join'><span class='muc-nick'>" + htmlescape(nick) + "</span>" + " has joined" + (text?(" ("+htmlescape(text)+")"):"") + "</span><br/>\n";
-			if(window.linkify)
-				html = linkify(html);
-			options.message_log.innerHTML += html;
-			options.message_log.scrollTop = options.message_log.scrollHeight;
+			print_message(nick, " has joined" + (text?(" ("+htmlescape(text)+")"):""), get_timestamp(), 'muc-join');
 		}
 		
 		var statusmap = { online: "Available", away: "Away", xa: "Not available", dnd: "Busy", chat: "Free for a chat" };
@@ -78,27 +102,13 @@ function create_muc_ui(conn, jid, nick, options)
 				muc.occupants[nick].rosteritem = null;
 			}
 			
-			var html = "<span class='muc-leave'><span class='muc-nick'>" + htmlescape(nick) + "</span>" + " has left" + (text?(" ("+htmlescape(text)+")"):"") + "</span><br/>\n";
-			if(window.linkify)
-				html = linkify(html);
-			options.message_log.innerHTML += html;
-			options.message_log.scrollTop = options.message_log.scrollHeight; 
+			print_message(nick, " has left" + (text?(" ("+htmlescape(text)+")"):""), get_timestamp(), 'muc-leave');
 		}
-		
-		var action_pattern = /^\/me[ ']/;
 		
 		handlers.handle_message = function (stanza, muc, nick, message)
 		{
-			var html;
-			if(message.match(action_pattern))
-				html = "<span class='muc-message muc-action'><span class='muc-nick'>* " + htmlescape(nick) + "</span>" + " " + htmlescape(message.substring(4)) + "</span><br/>\n";
-			else
-				html = "<span class='muc-message'><span class='muc-nick'>" + htmlescape(nick) + "</span>" + ": " + htmlescape(message) + "</span><br/>\n";
+			print_message(nick, message, get_timestamp(), 'muc-message');
 			
-			if(window.linkify)
-				html = linkify(html);
-			options.message_log.innerHTML += html;
-			options.message_log.scrollTop = options.message_log.scrollHeight;
 			if(options.detect_focus && !muc.window_focused)
 			{
 				muc.unread_messages++;
@@ -108,16 +118,7 @@ function create_muc_ui(conn, jid, nick, options)
 				
 		handlers.handle_history = function (stanza, muc, nick, message)
 		{
-			var html;
-			if(message.match(action_pattern))
-				html = "<span class='muc-history muc-action'><span class='muc-nick'>* " + htmlescape(nick) + "</span>" + " " + htmlescape(message.substring(4)) + "</span><br/>\n";
-			else
-				html = "<span class='muc-history'><span class='muc-nick'>" + htmlescape(nick) + "</span>" + ": " + htmlescape(message) + "</span><br/>\n";
-			
-			if(window.linkify)
-				html = linkify(html);
-			options.message_log.innerHTML += html;
-			options.message_log.scrollTop = options.message_log.scrollHeight; 
+			print_message(nick, message, get_timestamp(), 'muc-history');
 		}
 	}
 	
@@ -287,6 +288,9 @@ function create_muc_ui(conn, jid, nick, options)
 	muc.unread_messages = 0;
 	muc.window_focused = true;
 	muc.hide_slash_warning = false;
+
+	window.muc=muc;
+	return muc;
 }
 
 function htmlescape(s)
