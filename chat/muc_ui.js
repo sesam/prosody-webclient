@@ -1,3 +1,15 @@
+function addLoader(which,f)
+{
+	if(window.addEventListener) // W3C standard
+	{
+		window.addEventListener(which, f, false);
+	}
+	else if(window.attachEvent) // Microsoft
+	{
+		window.attachEvent('on'+which, f);  //works for onload, onunload, onbeforeunload
+	}
+}
+
 function create_muc_ui(conn, jid, nick, options)
 {
 	if(!conn)

@@ -33,11 +33,10 @@ h1
 
 #nickchoose
 	{
-		height: 800px;
-		background: transparent;
+		height:100px;
+		padding:3em 0;
 		margin:auto;
 		text-align: center;
-		vertical-align: center;
 	}
 	
 #throbber

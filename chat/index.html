@@ -5,8 +5,6 @@
 	<link rel="stylesheet" href="_local.css" type="text/css" media="screen" />
 	<link rel="icon" href="/favicon.png" type="image/png" />
 	
-	<script type="text/javascript" src="_local.js"></script>
-
 	<script type="text/javascript" src="strophe/b64.js"></script>
 	<script type="text/javascript" src="strophe/md5.js"></script>
 	<script type="text/javascript" src="strophe/sha1.js"></script>
@@ -18,13 +16,14 @@
 	<script type="text/javascript" src="muc_ui.js"></script>
 
 	<script type="text/javascript" src="uki.js"></script>
+	<script type="text/javascript" src="_local.js"></script>
 	
 	<style type="text/css">
 		body, html { overflow: hidden; margin: 0; padding: 0; width: 100%, height: 100% }
 	</style>
 	<script type="text/javascript">
 		var conn = new Strophe.Connection(window.bosh ? window.bosh : "/bosh");
-		addEventListener("beforeunload", function() { window.conn.disconnect() } );
+
 		var room = window.room ? window.room : "test@conference.prosody.im";
 		var nick = window.location.toString().match(/[?&#]nick=([^&#]*)/); //Allow taking #nick=(nickname) as well as the traditional URL-parameter method
 		
@@ -52,19 +51,22 @@
 			if(status == Strophe.Status.CONNECTED)
 			{
 				conn.addHandler(version_handler, null, "iq", "get", null, null);
-				create_muc_ui(conn, room, nick,
+				window.muc = create_muc_ui(conn, room, nick,
 					{ message_log: document.getElementById('msglog')
 					, input_box: document.getElementById('msginput').getElementsByTagName("input")[0]
 					, occupant_list: document.getElementById('roster')
 					, detect_focus: true, tab_completion: true
 					}
 				);
-				window.onunload = window.onbeforeunload = function () {
-					if(!conn) return;
-					conn.send($pres({to: room, type:"unavailable"}).c("status").t("Window closed"));
-					conn.disconnect();
-					conn = null;
+				var _dis = function () {
+					if(!window.conn) return;
+					window.conn.send($pres({to: room, type:"unavailable"}).c("status").t("Window closed"));
+					window.conn.disconnect();
+					window.conn = null;
 				};
+
+				addLoader("unload", _dis);
+				addLoader("beforeunload", _dis);
 				
 				// Focus on entry box
 				document.getElementById('msginput').focus();
@@ -136,7 +138,7 @@
 			start_connection();
 		}
 
-		window.onload = function ()
+		addLoader( "load", function ()
 		{
 			var showprompt = false;			
 			var nickentry = document.getElementById('nickentry');
@@ -168,7 +170,7 @@
 			}
 			else
 				start_connection();
-		};
+		});
 	</script>
 </head>
 <body>
