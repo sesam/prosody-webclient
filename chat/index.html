@@ -22,9 +22,9 @@
 		body, html { overflow: hidden; margin: 0; padding: 0; width: 100%, height: 100% }
 	</style>
 	<script type="text/javascript">
-		var conn = new Strophe.Connection(window.bosh ? window.bosh : "/bosh");
+		var conn = new Strophe.Connection(window.xmpp_bosh ? window.xmpp_bosh : "/bosh");
 
-		var room = window.room ? window.room : "test@conference.prosody.im";
+		var room = window.xmpp_room ? window.xmpp_room : "test@conference.prosody.im";
 		var nick = window.location.toString().match(/[?&#]nick=([^&#]*)/); //Allow taking #nick=(nickname) as well as the traditional URL-parameter method
 		
 		if(nick && nick[1] && nick[1].length > 0)
@@ -128,7 +128,7 @@
 			if(nick.length > 24) nick = nick.substr(0, 20);
 			document.getElementById('nickchoose').style.display = 'none';
 			show_client();
-			conn.connect("anon.prosody.im", null, handle_connection_status, 50);
+			conn.connect((window.xmpp_srv ? window.xmpp_srv : "anon.prosody.im"), null, handle_connection_status, 50);
 		}
 		
 		function nickname_entered()
