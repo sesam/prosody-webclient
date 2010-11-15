@@ -1,1 +1,3 @@
-div#header { background: #572B85; }
+div#header { background: #572B85; padding-right: 5px; }
+div#header a { color: #ccc; }
+div#header p { float: right; }

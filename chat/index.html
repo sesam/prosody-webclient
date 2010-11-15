@@ -105,7 +105,7 @@
     						{ view: 'TextField'
     						, rect: '10 10 835 24'
     						, anchors: 'bottom left right'
-    						, placeholder: 'type your message here and press enter'
+    						, placeholder: (window.muc_placeholder ? window.muc_placeholder : 'type your message here and press enter')
     						, id: 'msginput'
     						}]
     					}]
@@ -175,7 +175,10 @@
 </head>
 <body>
 	<div id="header">
-			<img id="logo" src="/images/prosody_chatroom.png" />
+		<p>
+			<a href="http://prosody.im/">prosody</a><a href="http://code.google.com/p/prosody-webclient/">-webclient</a>
+		</p>
+		<img id="logo" src="/logo.png" />
 	</div>
 	<div id="nickchoose">
 		<p id="what-name">What name will you use in the chat?</p>
