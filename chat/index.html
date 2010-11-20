@@ -25,7 +25,6 @@
 	<script type="text/javascript">
 		var conn = new Strophe.Connection(window.xmpp_bosh ? window.xmpp_bosh : "/bosh");
 
-		var room = window.xmpp_room ? window.xmpp_room : "test@conference.prosody.im";
 		var nick = window.location.toString().match(/[?&#]nick=([^&#]*)/); //Allow taking #nick=(nickname) as well as the traditional URL-parameter method
 		
 		if(nick && nick[1] && nick[1].length > 0)
@@ -33,6 +32,17 @@
 
 		if (nick && console && console.info)
 			console.info('Nickname set to "' + nick + '"');
+
+		var room = window.location.toString().match(/[?&]room=([^&@%]*)/);
+		if(room && room[1] && room[1].length > 0)
+		{
+			room = room[1];
+			if(room.indexOf('@')<2)
+				room += window.xmpp_room.substring(window.xmpp_room.indexOf('@'))
+		}
+		else
+			room = window.xmpp_room ? window.xmpp_room : "test@conference.prosody.im";
+
 
 		function version_handler(stanza)
 		{
@@ -184,6 +194,8 @@
 	<div id="nickchoose">
 		<p id="what-name">What name will you use in the chat?</p>
 		<p><span id="name-colon">Name:</span> <input id="nickentry" type="text" />&nbsp;<input type="submit" id="join" value="Join chat" onclick='nickname_entered()' /></p>
+		<!--<p id="what-room">What chat room do you want to join?</p>
+		<p><span id="room-colon">Room:</span> <input id="roomentry" type="text" /></p>-->
 	</div>
 	<div id="client" style="height:100%;"></div>
 </body>
