@@ -42,7 +42,7 @@ function create_muc_handler(conn, jid, nick, options)
 		conn.send(pres.tree());
 	};
 
-	muc.set_status("online", null, { "maxstanzas": 25 });
+	muc.set_status("online", null, { "maxstanzas": 25 }); //TODO: make this time dependent or similar. See http://xmpp.org/extensions/xep-0045.html#example-34
 	
 	return muc;
 }

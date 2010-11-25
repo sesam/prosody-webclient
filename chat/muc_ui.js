@@ -22,7 +22,7 @@ function create_muc_ui(conn, jid, nick, options)
 	
 	action_pattern = new RegExp("^\/me[ ']");
 		
-	window.get_timestamp = function() { var d=new Date(); return d.getHours()+':'+d.getMinutes(); }
+	window.get_timestamp = function() { var d=new Date(), mm=d.getMinutes(); return d.getHours()+':'+(mm<10?'0'+mm:mm); }
 
 	var get_message = function (nick, message, timestamp, klass)
 		{
@@ -32,7 +32,7 @@ function create_muc_ui(conn, jid, nick, options)
 				message = message.substring(4);
 			}
 
-			var html = "<div class='"+klass+"'><span class='muc-timestamp'>" + timestamp + "</span><span class='muc-nick'>" + htmlescape(nick) + "</span>" + ": " + htmlescape(message) + "</div>\n";
+			var html = "<div class='"+klass+"'><span class='muc-timestamp'>" + timestamp + " </span><span class='muc-nick'>" + htmlescape(nick) + "</span>" + ": " + htmlescape(message) + "</div>\n";
 
 			if(window.linkify)
 				html = linkify(html);
@@ -41,9 +41,8 @@ function create_muc_ui(conn, jid, nick, options)
 
 		print_message = function (nick, message, timestamp, klass)
 		{
-			//var current_scroll = options.message_log.scrollTop;
 			options.message_log.innerHTML += get_message(nick, message, timestamp, klass);
-			//if(options.message_log.scrollHeight-current_scroll<=100) //only scroll down automatically when the screen is currently near the bottom, i.e. not reading backlog. (Feature or bug, you decide, this 100px criteria also makes auto-scrolling stop if some 5+ line chat message is received, and you'll have to scroll past it yourself to get the automatic scrolling going again.)
+			//if(options.message_log.scrollHeight - options.message_log.scrollTop <=100) //only scroll down automatically when the screen is currently near the bottom, i.e. not reading backlog. (Feature or bug, you decide, this 100px criteria also makes auto-scrolling stop if some 5+ line chat message is received, and you'll have to scroll past it yourself to get the automatic scrolling going again.)
 				options.message_log.scrollTop = options.message_log.scrollHeight;
 		}
 
@@ -145,18 +144,23 @@ function create_muc_ui(conn, jid, nick, options)
 		{
 			var code = window.event?window.event.keyCode:e.which;
 			var msg = input_box.value;
+			muc.unread_messages = 0;
 
 			if(code == 13 && msg.length > 0)
 			{
-				if(msg.charAt(0)=="/" && !muc.hide_slash_warning && !msg.match(action_pattern))
-				{
-					alert("Notice: /commands are not suppored. If this means nothing to you, just press enter again and your message will be sent, including the beginning / and sorry to bother you!");
-					muc.hide_slash_warning = true;
-				}
-				else
+				if(msg.charAt(0)!="/" || msg.match(action_pattern))
 				{
 					muc.send_message(input_box.value);
 					input_box.value = '';
+				}
+				else if (msg.substring(0,5)=='/quit')
+				{
+					conn.disconnect();
+				}
+				else if (!muc.hide_slash_warning)
+				{
+					alert("Notice: /commands are not supported. If this means nothing to you, just press enter again and your message will be sent, including the beginning / and sorry to bother you!");
+					muc.hide_slash_warning = true;
 				}
 				return false;
 			}
