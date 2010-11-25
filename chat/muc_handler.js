@@ -30,17 +30,19 @@ function create_muc_handler(conn, jid, nick, options)
 	if(options.handle_error)
 		conn.addHandler(new_error_handler(muc, options.handle_error), null, "presence", "error", null, null);
 	
-	muc.set_status = function (status, text)
+	muc.set_status = function (status, text, history)
 	{
 		var pres = $pres({to: jid+'/'+nick});
 		if(status && status != "online")
 			pres.c("show").t(status).up();
 		if(text)
 			pres.c("status").t(text).up();
+		if(history)
+			pres.c("x", { "xmlns":"http://jabber.org/protocol/muc" }).c("history", history).up().up();
 		conn.send(pres.tree());
 	};
 
-	muc.set_status("online");
+	muc.set_status("online", null, { "maxstanzas": 25 });
 	
 	return muc;
 }
