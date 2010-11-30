@@ -124,10 +124,10 @@ function core_md5(x, len)
     c = md5_ii(c, d, a, b, x[i+ 2], 15,  718787259);
     b = md5_ii(b, c, d, a, x[i+ 9], 21, -343485551);
 
-    a = safe_add(a, olda);
-    b = safe_add(b, oldb);
-    c = safe_add(c, oldc);
-    d = safe_add(d, oldd);
+    a = bit_safe_add(a, olda);
+    b = bit_safe_add(b, oldb);
+    c = bit_safe_add(c, oldc);
+    d = bit_safe_add(d, oldd);
   }
   return [a, b, c, d];
 }
@@ -137,7 +137,7 @@ function core_md5(x, len)
  */
 function md5_cmn(q, a, b, x, s, t)
 {
-  return safe_add(bit_rol(safe_add(safe_add(a, q), safe_add(x, t)), s),b);
+  return bit_safe_add(bit_rol(bit_safe_add(bit_safe_add(a, q), bit_safe_add(x, t)), s),b);
 }
 function md5_ff(a, b, c, d, x, s, t)
 {
@@ -179,7 +179,7 @@ function core_hmac_md5(key, data)
  * Add integers, wrapping at 2^32. This uses 16-bit operations internally
  * to work around bugs in some JS interpreters.
  */
-function safe_add(x, y)
+function bit_safe_add(x, y)
 {
   var lsw = (x & 0xFFFF) + (y & 0xFFFF);
   var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
