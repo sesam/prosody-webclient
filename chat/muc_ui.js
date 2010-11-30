@@ -24,7 +24,7 @@ function create_muc_ui(conn, jid, nick, options)
 		
 	window.get_timestamp = function() { var d=new Date(), mm=d.getMinutes(); return d.getHours()+':'+(mm<10?'0'+mm:mm); }
 
-	var get_message = function (nick, message, timestamp, klass)
+	get_message = function (nick, message, timestamp, klass)
 		{
 			if(message.match(action_pattern))
 			{
@@ -39,10 +39,11 @@ function create_muc_ui(conn, jid, nick, options)
 			return html;
 		}
 
-		print_message = function (nick, message, timestamp, klass)
+	print_message = function (nick, message, timestamp, klass)
 		{
-			options.message_log.innerHTML += get_message(nick, message, timestamp, klass);
-			//if(options.message_log.scrollHeight - options.message_log.scrollTop <=100) //only scroll down automatically when the screen is currently near the bottom, i.e. not reading backlog. (Feature or bug, you decide, this 100px criteria also makes auto-scrolling stop if some 5+ line chat message is received, and you'll have to scroll past it yourself to get the automatic scrolling going again.)
+			var x = options.message_log;
+			x.innerHTML += get_message(nick, message, timestamp, klass);
+			if(x.scrollHeight - x.scrollTop - x.offsetHeight <=100) //only scroll down automatically when the screen is currently near the bottom, i.e. not reading backlog. (Feature or bug, you decide, this 100px criteria also makes auto-scrolling stop if some 5+ line chat message is received, and you'll have to scroll past it yourself to get the automatic scrolling going again.)
 				options.message_log.scrollTop = options.message_log.scrollHeight;
 		}
 
@@ -126,6 +127,7 @@ function create_muc_ui(conn, jid, nick, options)
 		if(error == "conflict")
 		{
 			alert("The nickname you chose is already in use, please choose another one");
+			window.location.hash='';
 			window.location.reload();
 		}
 	}
@@ -156,6 +158,7 @@ function create_muc_ui(conn, jid, nick, options)
 				else if (msg.substring(0,5)=='/quit')
 				{
 					conn.disconnect();
+					input_box.value = '';
 				}
 				else if (!muc.hide_slash_warning)
 				{
@@ -227,7 +230,7 @@ function create_muc_ui(conn, jid, nick, options)
 		}
 	}
 	else
-		alert("no input");
+		alert("Incorrect page integration: chat text box not found");
 	
 	if(options.detect_focus)
 	{
