@@ -16,11 +16,10 @@
 	<script type="text/javascript" src="muc_handler.js"></script>
 	<script type="text/javascript" src="muc_ui.js"></script>
 
-	<script type="text/javascript" src="uki/uki.js"></script>
 	<script type="text/javascript" src="_local.js"></script>
 	
 	<style type="text/css">
-		body, html { overflow: hidden; margin: 0; padding: 0; width: 100%, height: 100% }
+		body, html { overflow: hidden; margin: 0; padding: 0; width: 100%; height: 100% }
 	</style>
 	<script type="text/javascript">
 		var conn = new Strophe.Connection(window.xmpp_bosh ? window.xmpp_bosh : "/bosh");
@@ -39,6 +38,8 @@
 			room = room[1];
 			if(room.indexOf('@')<2)
 				room += window.xmpp_room.substring(window.xmpp_room.indexOf('@'))
+			if (nick && console && console.info)
+				console.info('Room set to "' + room + '"');
 		}
 		else
 			room = window.xmpp_room ? window.xmpp_room : "test@conference.prosody.im";
@@ -88,49 +89,7 @@
 
 		function show_client()
 		{
-			uki(
-			{ view: 'VFlow'
-			, rect: '0 0 1000 449'
-			, anchors: 'top bottom left right'
-			, childViews: [
-				{ view: 'HSplitPane', rect: '0 34 1000 415'
-				, anchors: 'left top right bottom'
-				, autogrowLeft: true, autogrowRight: false
-				, handlePosition: 850
-				, leftChildViews: [
-					{ view: 'VFlow'
-					, rect: '0 0 850 415'
-					, anchors: 'top left bottom right'
-					, childViews: [
-    						{ view: 'ScrollPane'
-    						, rect: '10 10 835 375'
-    						, anchors: 'top left right bottom'
-    						, id: 'msglog'
-    						}
-    						,
-    						{ view: 'Box'
-    						, rect: '0 0 835 7'
-    						, anchors: 'top left right'
-    						}
-    						,	
-    						{ view: 'TextField'
-    						, rect: '10 10 835 24'
-    						, anchors: 'bottom left right'
-    						, placeholder: (window.muc_placeholder ? window.muc_placeholder : 'type your message here and press enter')
-    						, id: 'msginput'
-    						}]
-    					}]
-				, rightChildViews: [
-     					{ view: 'ScrollPane'
-     					, rect: '5 10 140 395'
-     					, anchors: 'top left right bottom'
-     					, scrollableV: true
-     					, id: 'roster'
-     					}]
-     				}]
-			}
-		//).attachTo(window, '1000 449');
-		).attachTo(document.getElementById('client'), '1000 449' );
+			document.getElementById('client').style.display = 'block';
 		}
 
 		function start_connection()
@@ -145,7 +104,7 @@
 		function nickname_entered()
 		{
 			nick = document.getElementById('nickentry').value;
-			window.location.hash = '#nick=' + nick; //Save chosen nick in URL #, such that a bookmark of the chat page leads *straight back* into the chatroom(!)
+			if(nick.substring(0,5)!='guest') window.location.hash = '#nick=' + nick; //Save chosen nick in URL #, such that a bookmark of the chat page leads *straight back* into the chatroom(!)
 			start_connection();
 		}
 
@@ -197,6 +156,18 @@
 		<!--<p id="what-room">What chat room do you want to join?</p>
 		<p><span id="room-colon">Room:</span> <input id="roomentry" type="text" /></p>-->
 	</div>
-	<div id="client" style="height:100%;"></div>
+	<table id="client" style="display:none;" border="0" cellpadding="0" cellspacing="0">
+		<tr height="99%"><td width="99%">
+		<div id="msglog">
+		</div>
+		</td><td valign="top" width="1%">
+		<div id="roster"></div>
+		</td></tr><tr height="1%"><td colspan="2" valign="bottom">
+		<!--<br clear="all" />-->
+		<div id="msginput">
+			<input /><br />&nbsp;
+		</div>
+		</td></tr></table>
+	</div>
 </body>
 </html>
